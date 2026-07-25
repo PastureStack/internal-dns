@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/rancher/go-rancher-metadata/metadata"
-	"github.com/rancher/log"
+	log "github.com/PastureStack/internal-dns/internal/logging"
+	"github.com/PastureStack/internal-dns/metadata"
 )
 
 var (
@@ -24,7 +24,7 @@ type MetadataFetcher interface {
 	GetServiceInLocalEnvironment(stackName string, svcName string) (metadata.Service, error)
 }
 
-type rMetaFetcher struct {
+type platformMetadataFetcher struct {
 	metadataClient metadata.Client
 }
 
@@ -32,22 +32,22 @@ type ConfigGenerator struct {
 	metaFetcher MetadataFetcher
 }
 
-func (mf rMetaFetcher) GetSelfHost() (metadata.Host, error) {
+func (mf platformMetadataFetcher) GetSelfHost() (metadata.Host, error) {
 	return mf.metadataClient.GetSelfHost()
 }
 
-func (mf rMetaFetcher) GetRegionName() (string, error) {
+func (mf platformMetadataFetcher) GetRegionName() (string, error) {
 	return mf.metadataClient.GetRegionName()
 }
 
-func (c *ConfigGenerator) Init(metadataServer *string) error {
-	metadataClient, err := metadata.NewClientAndWait(fmt.Sprintf("http://%s/2016-07-29", *metadataServer))
+func (c *ConfigGenerator) Init(metadataURL *string) error {
+	metadataClient, err := metadata.NewClientAndWait(*metadataURL)
 	if err != nil {
 		log.Errorf("Error initiating metadata client: %v", err)
 		return err
 	}
 
-	c.metaFetcher = rMetaFetcher{
+	c.metaFetcher = platformMetadataFetcher{
 		metadataClient: metadataClient,
 	}
 	return nil
@@ -93,10 +93,10 @@ func (c *ConfigGenerator) SetLinksForRegions(key string, linkAlias string, cARec
 	}
 	if _, ok := aRegionRecs[key]; ok {
 		cARecs[fmt.Sprintf("%s.", linkAlias)] = aRegionRecs[key]
-		cARecs[fmt.Sprintf("%s.%s.", linkAlias, getDefaultRancherNamespace())] = aRegionRecs[key]
+		cARecs[fmt.Sprintf("%s.%s.", linkAlias, getDefaultPlatformNamespace())] = aRegionRecs[key]
 	} else if _, ok := cRegionRecs[key]; ok {
 		cCnameRecs[fmt.Sprintf("%s.", linkAlias)] = cRegionRecs[key]
-		cCnameRecs[fmt.Sprintf("%s.%s.", linkAlias, getDefaultRancherNamespace())] = cRegionRecs[key]
+		cCnameRecs[fmt.Sprintf("%s.%s.", linkAlias, getDefaultPlatformNamespace())] = cRegionRecs[key]
 	}
 }
 
@@ -185,9 +185,9 @@ func (c *ConfigGenerator) GenerateAnswers() (Answers, error) {
 	a := ClientAnswers{
 		A:             aRecs,
 		Cname:         cRecs,
-		Search:        []string{getDefaultRancherNamespace()},
+		Search:        []string{getDefaultPlatformNamespace()},
 		Recurse:       globalRecurse,
-		Authoritative: []string{getDefaultRancherNamespace()},
+		Authoritative: []string{getDefaultPlatformNamespace()},
 	}
 	answers["default"] = a
 
@@ -353,7 +353,7 @@ func (c *ConfigGenerator) GetRecords() (map[string]RecordA, map[string]RecordCna
 		Answer: splitTrim(*metadataAnswer, ","),
 	}
 	//add to the service record
-	aRecs[fmt.Sprintf("rancher-metadata.%s.", getDefaultRancherNamespace())] = aRec
+	aRecs[fmt.Sprintf("metadata.%s.", getDefaultPlatformNamespace())] = aRec
 
 	return aRecs, cRecs, clientIpsToServiceLinks, clientIpsToContainerLinks, clientIpToContainer, svcNameToSvc, nil
 }
@@ -366,8 +366,8 @@ func splitTrim(s string, sep string) []string {
 	return t
 }
 
-func getDefaultRancherNamespace() string {
-	return "rancher.internal"
+func getDefaultPlatformNamespace() string {
+	return "pasture.internal"
 }
 
 func getDefaultKubernetesNamespace() string {
@@ -378,7 +378,7 @@ func getServiceGlobalNamespace(s *metadata.Service) string {
 	if strings.EqualFold(s.Kind, "kubernetesService") {
 		return fmt.Sprintf("svc.%s", getDefaultKubernetesNamespace())
 	}
-	return getDefaultRancherNamespace()
+	return getDefaultPlatformNamespace()
 }
 
 func getServiceFqdn(s *metadata.Service) string {
@@ -394,7 +394,7 @@ func getLinkGlobalFqdn(linkName string, s *metadata.Service) string {
 	if s != nil {
 		return strings.ToLower(fmt.Sprintf("%s.%s.", linkName, getServiceGlobalNamespace(s)))
 	}
-	return strings.ToLower(fmt.Sprintf("%s.%s.", linkName, getDefaultRancherNamespace()))
+	return strings.ToLower(fmt.Sprintf("%s.%s.", linkName, getDefaultPlatformNamespace()))
 }
 
 func getLinkStackFqdn(linkName string, s *metadata.Service) string {
@@ -406,7 +406,7 @@ func getContainerFqdn(c *metadata.Container, s *metadata.Service) string {
 		return strings.ToLower(fmt.Sprintf("%s.%s.%s.%s.", c.Name, s.Name, s.StackName, getServiceGlobalNamespace(s)))
 
 	}
-	return strings.ToLower(fmt.Sprintf("%s.%s.", c.Name, getDefaultRancherNamespace()))
+	return strings.ToLower(fmt.Sprintf("%s.%s.", c.Name, getDefaultPlatformNamespace()))
 }
 
 func (c *ConfigGenerator) getServiceEndpoints(svc *metadata.Service, uuidToPrimaryIp map[string]string) ([]*Record, error) {
@@ -504,7 +504,7 @@ type Record struct {
 	Container *metadata.Container
 }
 
-func (mf rMetaFetcher) GetService(link string) (*metadata.Service, error) {
+func (mf platformMetadataFetcher) GetService(link string) (*metadata.Service, error) {
 	splitSvcName := strings.Split(link, "/")
 	var linkedService metadata.Service
 	var err error
@@ -519,26 +519,26 @@ func (mf rMetaFetcher) GetService(link string) (*metadata.Service, error) {
 	return &linkedService, err
 }
 
-func (mf rMetaFetcher) GetServiceFromRegionEnvironment(regionName string, envName string, stackName string, svcName string) (metadata.Service, error) {
+func (mf platformMetadataFetcher) GetServiceFromRegionEnvironment(regionName string, envName string, stackName string, svcName string) (metadata.Service, error) {
 	return mf.metadataClient.GetServiceFromRegionEnvironment(regionName, envName, stackName, svcName)
 }
 
-func (mf rMetaFetcher) GetServiceInLocalRegion(envName string, stackName string, svcName string) (metadata.Service, error) {
+func (mf platformMetadataFetcher) GetServiceInLocalRegion(envName string, stackName string, svcName string) (metadata.Service, error) {
 	return mf.metadataClient.GetServiceInLocalRegion(envName, stackName, svcName)
 }
 
-func (mf rMetaFetcher) GetServiceInLocalEnvironment(stackName string, svcName string) (metadata.Service, error) {
+func (mf platformMetadataFetcher) GetServiceInLocalEnvironment(stackName string, svcName string) (metadata.Service, error) {
 	return mf.metadataClient.GetServiceInLocalEnvironment(stackName, svcName)
 }
 
-func (mf rMetaFetcher) GetServices() ([]metadata.Service, error) {
+func (mf platformMetadataFetcher) GetServices() ([]metadata.Service, error) {
 	return mf.metadataClient.GetServices()
 }
 
-func (mf rMetaFetcher) GetContainers() ([]metadata.Container, error) {
+func (mf platformMetadataFetcher) GetContainers() ([]metadata.Container, error) {
 	return mf.metadataClient.GetContainers()
 }
 
-func (mf rMetaFetcher) OnChange(intervalSeconds int, do func(string)) {
+func (mf platformMetadataFetcher) OnChange(intervalSeconds int, do func(string)) {
 	mf.metadataClient.OnChange(intervalSeconds, do)
 }

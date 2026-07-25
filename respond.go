@@ -1,8 +1,8 @@
 package main
 
 import (
+	log "github.com/PastureStack/internal-dns/internal/logging"
 	"github.com/miekg/dns"
-	"github.com/rancher/log"
 )
 
 func Respond(w dns.ResponseWriter, req *dns.Msg, m *dns.Msg) {

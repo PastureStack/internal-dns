@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rancher/go-rancher-metadata/metadata"
+	"github.com/PastureStack/internal-dns/metadata"
 )
 
 var c1 *ConfigGenerator
@@ -36,7 +36,7 @@ func TestClientWithLinksAliasRegionEnvironment(t *testing.T) {
 			t.Fatalf("Incorrect number of A records, should be 2: [%v]", len(c.A))
 		}
 
-		fqdns := []string{"mylink.", "mylink.rancher.internal."}
+		fqdns := []string{"mylink.", "mylink.pasture.internal."}
 		for _, fqdn := range fqdns {
 			val, ok := c.A[fqdn]
 			if !ok {
@@ -77,7 +77,7 @@ func TestClientWithLinksAliasEnvironment(t *testing.T) {
 			t.Fatalf("Incorrect number of A records, should be 2: [%v]", len(c.A))
 		}
 
-		fqdns := []string{"yourlink.", "yourlink.rancher.internal."}
+		fqdns := []string{"yourlink.", "yourlink.pasture.internal."}
 		for _, fqdn := range fqdns {
 			val, ok := c.A[fqdn]
 			if !ok {
@@ -101,7 +101,7 @@ func TestAliasServiceRegion(t *testing.T) {
 		t.Fatalf("Error generating answers %v", err)
 	}
 
-	a := getRecordAFromDefault(answers, "svcAlias.stackB.rancher.internal.")
+	a := getRecordAFromDefault(answers, "svcAlias.stackB.pasture.internal.")
 	if len(a.Answer) != 1 {
 		t.Fatalf("Incorrect number of A records, should be 1: [%v]", len(a.Answer))
 	}

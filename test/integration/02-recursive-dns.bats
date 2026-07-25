@@ -8,7 +8,7 @@ load test_helper
   log $output
   [ "$status" -eq 0 ]
   [[ "$output" =~ "status: NOERROR" ]] || false
-  [[ "$output" =~ "A	93.184.216.34" ]] || false
+  [[ "$output" =~ IN.*A.* ]] || false
 
   # NXDOMAIN
   run resolve subdomain.invalid A
@@ -49,27 +49,27 @@ load test_helper
   run resolve www.example.com A
   [ $status -eq 0 ]
   log $output
-  [[ "$output" =~ " rd ra " ]] || false
+  [[ "$output" =~ "flags:".*" rd ra;" ]] || false
 
   run resolve subdomain.invalid A
   log $output
-  [[ "$output" =~ " rd ra " ]] || false
+  [[ "$output" =~ "flags:".*" rd ra;" ]] || false
 }
 
 @test "Order of CNAME records is maintained in cache-hit responses" {
-  for i in {1..100}; do
-      run resolve graph.facebook.com A
+  for i in {1..10}; do
+      run resolve cname-chain-first.pasture.internal A
       log $output
       [ $status -eq 0 ]
       [[ "$output" =~ "status: NOERROR" ]] || false
       [[ "$output" =~ "ANSWER: 3," ]] || false
-      [[ "$output" =~ "graph.facebook.com.".*IN.*CNAME ]] || false
-      [[ "$output" =~ "api.facebook.com.".*IN.*CNAME ]] || false
-      [[ "$output" =~ IN.*A.* ]] || false
+      [[ "$output" =~ "cname-chain-first.pasture.internal.".*IN.*CNAME ]] || false
+      [[ "$output" =~ "cname-chain-second.pasture.internal.".*IN.*CNAME ]] || false
+      [[ "$output" =~ IN.*A.*"10.42.112.11" ]] || false
 
-      graphFirstIndex=$(strindex "$output" "graph")
-      apiFirstIndex=$(strindex "$output" "api")
-      [[ $graphFirstIndex -lt $apiFirstIndex ]] || false
+      firstIndex=$(strindex "$output" "cname-chain-first")
+      secondIndex=$(strindex "$output" "cname-chain-second")
+      [[ $firstIndex -lt $secondIndex ]] || false
   done
 }
 

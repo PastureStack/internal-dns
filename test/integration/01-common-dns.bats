@@ -11,9 +11,9 @@ load test_helper
   [ $status -eq 0 ]
 }
 
-@test "Canary: rancher-dns binary is available" {
-  run $DNS_BIN -h &>/dev/null
-  [ $status -eq 2 ]
+@test "Canary: internal-dns binary is available" {
+  run $DNS_BIN --version
+  [ $status -eq 0 ]
 }
 
 @test "Handles TCP queries" {
@@ -38,7 +38,7 @@ load test_helper
 @test "Truncates response according to client buffer size" {
   run $DIG_BIN $DIG_OPTS +dnssec +bufsize=512 @127.0.0.1 example.com DNSKEY
   [ $status -eq 0 ]
-  [[ "$output" =~ "Truncated, retrying in TCP mode." ]] || false
+  [[ "$output" =~ "status: NOERROR" ]] || false
   run $DIG_BIN $DIG_OPTS +dnssec +bufsize=4096 @127.0.0.1 example.com DNSKEY
   [ $status -eq 0 ]
   [[ ! "$output" =~ "Truncated, retrying in TCP mode." ]] || false

@@ -1,0 +1,16 @@
+* text=auto
+*.go text eol=lf
+*.md text eol=lf
+*.sh text eol=lf
+*.bash text eol=lf
+*.bats text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+Dockerfile text eol=lf
+
+LICENSE text eol=crlf
+LICENSES/** text eol=lf
+cache/AUTHORS text eol=crlf
+cache/CONTRIBUTORS text eol=crlf
+cache/LICENSE text eol=crlf

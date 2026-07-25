@@ -1,87 +1,93 @@
 {
    "default":{
       "search":[
-         "rancher.internal"
+         "pasture.internal"
       ],
       "recurse":[
          "8.8.8.8",
          "8.8.4.4"
       ],
       "authoritative":[
-         "rancher.internal"
+         "pasture.internal"
       ],
       "a":{
-         "stack-a_service-baz_1.rancher.internal.":{
+         "stack-a_service-baz_1.pasture.internal.":{
             "answer":[
                "10.42.141.123"
             ]
          },
-         "stack-a_service-baz_2.rancher.internal.":{
+         "stack-a_service-baz_2.pasture.internal.":{
             "answer":[
                "10.42.195.8"
             ]
          },
-         "service-baz.stack-a.rancher.internal.":{
+         "service-baz.stack-a.pasture.internal.":{
             "answer":[
                "10.42.141.123",
                "10.42.195.8"
             ]
          },
-         "sidekick-bar.service-foo.stack-a.rancher.internal.":{
+         "sidekick-bar.service-foo.stack-a.pasture.internal.":{
             "answer":[
                "10.42.209.131"
             ]
          },
-         "service-foo.stack-a.rancher.internal.":{
+         "service-foo.stack-a.pasture.internal.":{
             "answer":[
                "10.42.112.91"
             ]
          },
-         "stack-a_service-foo_1.rancher.internal.":{
+         "stack-a_service-foo_1.pasture.internal.":{
             "answer":[
                "10.42.112.91"
             ]
          },
-         "sidekick-baz.service-bar.stack-b.rancher.internal.":{
+         "sidekick-baz.service-bar.stack-b.pasture.internal.":{
             "answer":[
                "10.42.209.120"
             ]
          },
-         "service-bar.stack-b.rancher.internal.":{
+         "service-bar.stack-b.pasture.internal.":{
             "answer":[
                "10.42.112.11"
             ]
          },
-         "stack-b_service-bar_1.rancher.internal.":{
+         "stack-b_service-bar_1.pasture.internal.":{
             "answer":[
                "10.42.112.11"
             ]
          },
-         "rancher-metadata.rancher.internal.":{
+         "metadata.pasture.internal.":{
             "answer":[
                "169.254.169.250"
             ]
          },
-         "ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd.ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.rancher.internal.":{
+         "ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd.ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.pasture.internal.":{
             "answer":[
                "169.254.169.250"
             ]
          }
       },
       "cname":{
-         "external-alias-foo.stack-a.rancher.internal.":{
+         "external-alias-foo.stack-a.pasture.internal.":{
             "answer":"www.example.com."
          },
-         "external-alias-bar.stack-b.rancher.internal.":{
+         "external-alias-bar.stack-b.pasture.internal.":{
             "answer":"www.example.com."
+         },
+         "cname-chain-first.pasture.internal.":{
+            "answer":"cname-chain-second.pasture.internal."
+         },
+         "cname-chain-second.pasture.internal.":{
+            "answer":"service-bar.stack-b.pasture.internal."
          },
       }
    },
    "127.0.0.1":{
       "search":[
-         "stack-a.rancher.internal",
-         "service-foo.stack-a.rancher.internal",
-         "rancher.internal"
+         "stack-a.pasture.internal",
+         "service-foo.stack-a.pasture.internal",
+         "pasture.internal"
       ],
       "recurse":[
 

@@ -3,8 +3,8 @@ package main
 import (
 	"time"
 
+	log "github.com/PastureStack/internal-dns/internal/logging"
 	"github.com/miekg/dns"
-	"github.com/rancher/log"
 	"strings"
 )
 

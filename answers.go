@@ -5,8 +5,8 @@ import (
 	"net"
 	"strings"
 
+	log "github.com/PastureStack/internal-dns/internal/logging"
 	"github.com/miekg/dns"
-	"github.com/rancher/log"
 )
 
 // The top-level key in the config for the default (not client-specific answers)
@@ -121,7 +121,7 @@ func (answers *Answers) Addresses(clientIp string, fqdn string, cnameParents []d
 		r := new(dns.Msg)
 		r.SetQuestion(fqdn, dns.TypeA)
 		msg, err := ResolveTryAll(r, answers.Recursers(clientIp))
-		if err == nil {
+		if err == nil && msg != nil {
 			return msg.Answer, true
 		}
 	}

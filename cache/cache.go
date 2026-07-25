@@ -10,7 +10,7 @@ package cache
 // races. This should be optimized.
 
 import (
-	"crypto/sha1"
+	"crypto/sha256"
 	"sync"
 	"time"
 
@@ -54,15 +54,14 @@ func (c *Cache) Remove(s string) {
 // EvictRandom removes a random member a the cache.
 // Must be called under a write lock.
 func (c *Cache) EvictRandom() {
-	clen := len(c.m)
-	if clen < c.capacity {
+	excess := len(c.m) - c.capacity
+	if excess <= 0 {
 		return
 	}
-	i := c.capacity - clen
-	for k, _ := range c.m {
+	for k := range c.m {
 		delete(c.m, k)
-		i--
-		if i == 0 {
+		excess--
+		if excess == 0 {
 			break
 		}
 	}
@@ -122,7 +121,7 @@ func (c *Cache) Search(s string) (*dns.Msg, time.Time, bool) {
 // Key creates a hash key from a question section. It creates a different key
 // for requests with DNSSEC.
 func Key(q dns.Question, dnssec, tcp bool) string {
-	h := sha1.New()
+	h := sha256.New()
 	i := append([]byte(q.Name), packUint16(q.Qtype)...)
 	if dnssec {
 		i = append(i, byte(255))
@@ -135,7 +134,7 @@ func Key(q dns.Question, dnssec, tcp bool) string {
 
 // Key uses the name, type and rdata, which is serialized and then hashed as the key for the lookup.
 func KeyRRset(rrs []dns.RR) string {
-	h := sha1.New()
+	h := sha256.New()
 	i := []byte(rrs[0].Header().Name)
 	i = append(i, packUint16(rrs[0].Header().Rrtype)...)
 	for _, r := range rrs {
@@ -146,7 +145,7 @@ func KeyRRset(rrs []dns.RR) string {
 		case *dns.SRV:
 			i = append(i, packUint16(t.Priority)...)
 			i = append(i, packUint16(t.Weight)...)
-			i = append(i, packUint16(t.Weight)...)
+			i = append(i, packUint16(t.Port)...)
 			i = append(i, []byte(t.Target)...)
 		case *dns.A:
 			i = append(i, []byte(t.A)...)

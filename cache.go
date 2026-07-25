@@ -3,8 +3,8 @@ package main
 import (
 	"time"
 
+	"github.com/PastureStack/internal-dns/cache"
 	"github.com/miekg/dns"
-	"github.com/rancher/rancher-dns/cache"
 )
 
 func getClientCache(clientIp string) *cache.Cache {

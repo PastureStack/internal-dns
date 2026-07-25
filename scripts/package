@@ -1,46 +1,19 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-REPO=${REPO:-rancher}
-SCRIPTPATH="$(cd "$(dirname "$0")"; pwd -P)"
+cd "$(dirname "$0")/.."
+tag="${TAG:-dev}"
+repository="${REPO:-ghcr.io/pasturestack}"
+image="${repository}/internal-dns:${tag}"
 
-package() {
-  local os arch suffix tag repo env image_name binary_name
-  os=$1
-  arch=$2
-  image_name="dns"
-  binary_name="rancher-dns"
-  if [ "$WINDOWS_DOCKER_HOST" == "" -a "$os" == "windows" ]; then
-      echo "WINDOWS_DOCKER_HOST is not set, skip packaging Windows image"
-      return
-  fi
-  [ "$os"   == "windows" ] && binary_name="${binary_name}.exe"
-  [ "$os"   != "linux" ] && image_name="${image_name}-${os}"
-  [ "$arch" != "amd64" ] && suffix="${suffix}_${arch}"
-  
-  if $(echo ${tag} | grep -q dirty); then
-      tag=dev
-  fi
-  tag="${VERSION}${suffix}"
+docker build \
+  --provenance=false \
+  --network "${DOCKER_BUILD_NETWORK:-default}" \
+  --build-arg UBUNTU_MIRROR="${UBUNTU_MIRROR:-http://archive.ubuntu.com/ubuntu}" \
+  --build-arg IMAGE_VERSION="$tag" \
+  -t "$image" \
+  -f package/linux/amd64/Dockerfile .
 
-  if [ ! -d "package/$os/$arch" ]; then 
-      echo "Directory package/$os/$arch not exist, skip package"
-      return
-  fi
-  cp bin/$os/$arch/$binary_name package/$os/$arch
-
-  # because if building windows image, need to connect to docker on windows. set DOCKER_HOST for docker build context
-  [ "$os" == "windows" ] && dhost="tcp://$WINDOWS_DOCKER_HOST:2375" || dhost="$DOCKER_HOST"
-  DOCKER_HOST=$dhost docker build -t ${REPO}/${image_name}:${tag} -f package/$os/$arch/Dockerfile package/$os/$arch
-
-  echo ${REPO}/${image_name}:${tag} >> dist/images
-  echo Built ${REPO}/${image_name}:${tag}
-}
-
-source $SCRIPTPATH/version
-cd $SCRIPTPATH/..
-mkdir -p dist && rm -rf dist/*
-for os in $(ls bin); do
-  for arch in $(ls bin/$os); do
-    package $os $arch
-  done
-done
+mkdir -p dist
+printf '%s\n' "$image" > dist/images
+printf 'Built %s\n' "$image"

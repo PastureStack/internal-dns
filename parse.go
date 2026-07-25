@@ -1,22 +1,31 @@
 package main
 
 import (
-	"io/ioutil"
+	"fmt"
 	"os"
 	"strings"
 
-	"github.com/rancher/log"
-	yaml "gopkg.in/yaml.v2"
+	log "github.com/PastureStack/internal-dns/internal/logging"
+	yaml "gopkg.in/yaml.v3"
 )
+
+const maxAnswersFileBytes = 64 << 20
 
 func ParseAnswers(path string) (out Answers, err error) {
 	out = make(Answers)
-	data, err := ioutil.ReadFile(path)
+	info, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
 			log.Warn("Failed to find: ", path)
 			return out, nil
 		}
+		return nil, err
+	}
+	if info.Size() > maxAnswersFileBytes {
+		return nil, fmt.Errorf("answers file exceeds %d bytes", maxAnswersFileBytes)
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
 		return nil, err
 	}
 

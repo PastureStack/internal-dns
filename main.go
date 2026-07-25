@@ -5,8 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"math/rand"
 	"net"
 	"net/http"
 	"os"
@@ -18,11 +16,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/PastureStack/internal-dns/cache"
+	log "github.com/PastureStack/internal-dns/internal/logging"
 	"github.com/miekg/dns"
-	"github.com/rancher/log"
-	logserver "github.com/rancher/log/server"
-	"github.com/rancher/rancher-dns/cache"
 )
 
 var (
@@ -37,8 +33,8 @@ var (
 	cacheCapacity   = flag.Uint("cache-capacity", 1000, "Cache capacity")
 	logFile         = flag.String("log", "", "Log file")
 	pidFile         = flag.String("pid-file", "", "PID to write to")
-	metadataServer  = flag.String("metadata-server", "", "Metadata server url")
-	metadataAnswer  = flag.String("rancher-metadata-answer", "169.254.169.250", "Metadata IP address(es), comma-delimited (adds static A records)")
+	metadataURL     = flag.String("metadata-url", "", "Metadata API base URL, including version")
+	metadataAnswer  = flag.String("metadata-answer", "169.254.169.250", "Metadata IP address(es), comma-delimited (adds static A records)")
 	neverRecurseTo  = flag.String("never-recurse-to", "169.254.169.250", "Never recurse to IP address(es), comma-delimited")
 
 	answers                   Answers
@@ -52,27 +48,26 @@ var (
 )
 
 func metadataDriven() bool {
-	return *metadataServer != ""
+	return *metadataURL != ""
 }
 
 func main() {
-	logserver.StartServerWithDefaults()
 	parseFlags()
 
-	log.Infof("Starting rancher-dns %s", VERSION)
+	if *showVersion {
+		fmt.Printf("%s\n", VERSION)
+		return
+	}
+
+	log.Infof("starting internal-dns %s", VERSION)
 	err := loadAnswers()
 	if err != nil {
 		log.Fatal("Cannot startup without a valid Answers file")
 	}
 
-	if *showVersion {
-		fmt.Printf("%s\n", VERSION)
-		os.Exit(0)
-	}
-
 	if metadataDriven() {
 		configGenerator = &ConfigGenerator{}
-		err = configGenerator.Init(metadataServer)
+		err = configGenerator.Init(metadataURL)
 		if err != nil {
 			log.Fatalf("Cannot startup: failed to init config generator: %v", err)
 		}
@@ -80,10 +75,6 @@ func main() {
 
 	watchSignals()
 	watchHttp()
-
-	seed := time.Now().UTC().UnixNano()
-	log.Debug("Set random seed to ", seed)
-	rand.Seed(seed)
 
 	udpServer := &dns.Server{Addr: *listen, Net: "udp"}
 	tcpServer := &dns.Server{Addr: *listen, Net: "tcp"}
@@ -117,7 +108,7 @@ func parseFlags() {
 
 	if *pidFile != "" {
 		log.Infof("Writing pid %d to %s", os.Getpid(), *pidFile)
-		if err := ioutil.WriteFile(*pidFile, []byte(strconv.Itoa(os.Getpid())), 0644); err != nil {
+		if err := os.WriteFile(*pidFile, []byte(strconv.Itoa(os.Getpid())), 0600); err != nil {
 			log.Fatalf("Failed to write pid file %s: %v", *pidFile, err)
 		}
 	}
@@ -144,7 +135,7 @@ func loadAnswersFromMeta(name string) {
 	if err != nil {
 		log.Errorf("Failed to marshall answers: %v", err)
 	}
-	err = ioutil.WriteFile(*answersFile, b, 0644)
+	err = os.WriteFile(*answersFile, b, 0600)
 	if err != nil {
 		log.Errorf("Failed to write answers to file: %v", err)
 	}
@@ -192,13 +183,27 @@ func watchSignals() {
 }
 
 func watchHttp() {
-	reloadRouter := mux.NewRouter()
-	reloadRouter.HandleFunc("/v1/reload", httpReload).Methods("POST")
+	reloadRouter := http.NewServeMux()
+	reloadRouter.HandleFunc("/v1/reload", httpReload)
 	log.Info("Listening for Reload on ", *listenReload)
-	go http.ListenAndServe(*listenReload, reloadRouter)
+	server := &http.Server{Addr: *listenReload, Handler: reloadRouter, ReadHeaderTimeout: 5 * time.Second}
+	go func() {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Errorf("reload API stopped: %v", err)
+		}
+	}()
 }
 
 func httpReload(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPost {
+		w.Header().Set("Allow", http.MethodPost)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if metadataDriven() {
+		http.Error(w, "file reload is disabled in metadata mode", http.StatusConflict)
+		return
+	}
 	log.Debugf("Received HTTP reload request")
 	respChan := make(chan error)
 	reloadChan <- respChan
@@ -207,8 +212,7 @@ func httpReload(w http.ResponseWriter, req *http.Request) {
 	if err == nil {
 		io.WriteString(w, "OK")
 	} else {
-		w.WriteHeader(500)
-		io.WriteString(w, err.Error())
+		http.Error(w, "reload failed", http.StatusInternalServerError)
 	}
 }
 

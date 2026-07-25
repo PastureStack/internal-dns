@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rancher/go-rancher-metadata/metadata"
+	"github.com/PastureStack/internal-dns/metadata"
 )
 
 var c *ConfigGenerator
@@ -24,7 +24,7 @@ func TestVIP(t *testing.T) {
 		t.Fatalf("Error generating answers %v", err)
 	}
 
-	a := getRecordAFromDefault(answers, "vipsvc.foo.rancher.internal.")
+	a := getRecordAFromDefault(answers, "vipsvc.foo.pasture.internal.")
 	if len(a.Answer) != 1 {
 		t.Fatalf("Incorrect number of answers for vip [%v]", a.Answer)
 	}
@@ -39,7 +39,7 @@ func TestRegular(t *testing.T) {
 		t.Fatalf("Error generating answers %v", err)
 	}
 
-	a := getRecordAFromDefault(answers, "regularsvc.foo.rancher.internal.")
+	a := getRecordAFromDefault(answers, "regularsvc.foo.pasture.internal.")
 	if len(a.Answer) != 1 {
 		t.Fatalf("Incorrect number of answers for regular service [%v]", a.Answer)
 	}
@@ -54,7 +54,7 @@ func TestStoppedContainer(t *testing.T) {
 		t.Fatalf("Error generating answers %v", err)
 	}
 
-	a := getRecordAFromDefault(answers, "stoppedsvc.foo.rancher.internal.")
+	a := getRecordAFromDefault(answers, "stoppedsvc.foo.pasture.internal.")
 	if len(a.Answer) != 1 {
 		t.Fatalf("Incorrect number of answers for service with only one stopped container [%v]", a.Answer)
 	}
@@ -66,7 +66,7 @@ func TestOneStoppedContainer(t *testing.T) {
 		t.Fatalf("Error generating answers %v", err)
 	}
 
-	a := getRecordAFromDefault(answers, "stoppedonesvc.foo.rancher.internal.")
+	a := getRecordAFromDefault(answers, "stoppedonesvc.foo.pasture.internal.")
 	if len(a.Answer) != 1 {
 		t.Fatalf("Incorrect number of answers for service with 2 containers, 1 stopped [%v]", a.Answer)
 	}
@@ -78,7 +78,7 @@ func TestOneUnhealthyContainer(t *testing.T) {
 		t.Fatalf("Error generating answers %v", err)
 	}
 
-	a := getRecordAFromDefault(answers, "unhealthysvc.foo.rancher.internal.")
+	a := getRecordAFromDefault(answers, "unhealthysvc.foo.pasture.internal.")
 	if len(a.Answer) != 1 {
 		t.Fatalf("Incorrect number of answers for service with 2 containers, 1 stopped [%v]", a.Answer)
 	}
@@ -94,7 +94,7 @@ func TestNoHealthStateWithHealthcheck(t *testing.T) {
 		t.Fatalf("Error generating answers %v", err)
 	}
 
-	a := getRecordAFromDefault(answers, "healthempty.foo.rancher.internal.")
+	a := getRecordAFromDefault(answers, "healthempty.foo.pasture.internal.")
 
 	if len(a.Answer) != 1 {
 		t.Fatalf("Incorrect number of answers for service with health check empty, expected count 1: [%v]", a.Answer)
@@ -111,12 +111,12 @@ func TestExternalgService(t *testing.T) {
 		t.Fatalf("Error generating answers %v", err)
 	}
 
-	a := getRecordAFromDefault(answers, "externalCnameSvc.foo.rancher.internal.")
+	a := getRecordAFromDefault(answers, "externalCnameSvc.foo.pasture.internal.")
 	if len(a.Answer) != 0 {
 		t.Fatalf("Incorrect number of A records, should be 0: [%v]", len(a.Answer))
 	}
 
-	c := getRecordCnameFromDefault(answers, "externalCnameSvc.foo.rancher.internal.")
+	c := getRecordCnameFromDefault(answers, "externalCnameSvc.foo.pasture.internal.")
 
 	if c.Answer != "google.com." {
 		t.Fatalf("Incorrect answer for cname [%v]", c.Answer)
@@ -129,7 +129,7 @@ func TestExternalIpsService(t *testing.T) {
 		t.Fatalf("Error generating answers %v", err)
 	}
 
-	a := getRecordAFromDefault(answers, "externalIpsSvc.foo.rancher.internal.")
+	a := getRecordAFromDefault(answers, "externalIpsSvc.foo.pasture.internal.")
 	if len(a.Answer) != 2 {
 		t.Fatalf("Incorrect number of A records, should be 2: [%v]", len(a.Answer))
 	}
@@ -141,7 +141,7 @@ func TestAliasService(t *testing.T) {
 		t.Fatalf("Error generating answers %v", err)
 	}
 
-	a := getRecordAFromDefault(answers, "aliasSvc.foo.rancher.internal.")
+	a := getRecordAFromDefault(answers, "aliasSvc.foo.pasture.internal.")
 	if len(a.Answer) != 2 {
 		t.Fatalf("Incorrect number of A records, should be 2: [%v]", len(a.Answer))
 	}
@@ -160,7 +160,7 @@ func TestClientNoLinks(t *testing.T) {
 	if len(c.A) != 0 {
 		t.Fatalf("Incorrect number of A records: [%v]", len(c.A))
 	}
-	a := getRecordAFromDefault(answers, "clientIp1.rancher.internal.")
+	a := getRecordAFromDefault(answers, "clientIp1.pasture.internal.")
 	if len(a.Answer) != 1 {
 		t.Fatalf("Incorrect number of A records, should be 1: [%v]", len(a.Answer))
 	}
@@ -179,7 +179,7 @@ func TestClientStandalone(t *testing.T) {
 	if len(c.A) != 0 {
 		t.Fatalf("Incorrect number of A records: [%v]", len(c.A))
 	}
-	a := getRecordAFromDefault(answers, "clientStandalone.rancher.internal.")
+	a := getRecordAFromDefault(answers, "clientStandalone.pasture.internal.")
 	if len(a.Answer) != 1 {
 		t.Fatalf("Incorrect number of A records, should be 1: [%v]", len(a.Answer))
 	}
@@ -236,12 +236,12 @@ func TestVipClientKubernetes(t *testing.T) {
 	}
 }
 
-func TestRancherMetadata(t *testing.T) {
+func TestMetadataRecord(t *testing.T) {
 	answers, err := c.GenerateAnswers()
 	if err != nil {
 		t.Fatalf("Error generating answers %v", err)
 	}
-	a := getRecordAFromDefault(answers, "rancher-metadata.rancher.internal.")
+	a := getRecordAFromDefault(answers, "metadata.pasture.internal.")
 	if len(a.Answer) != 1 {
 		t.Fatalf("Incorrect number of A records, should be 1: [%v]", len(a.Answer))
 	}
@@ -283,7 +283,7 @@ func TestNetworkFrom(t *testing.T) {
 	if len(c.A) != 0 {
 		t.Fatalf("Incorrect number of A records: [%v]", len(c.A))
 	}
-	a := getRecordAFromDefault(answers, "networkFromMaster.rancher.internal.")
+	a := getRecordAFromDefault(answers, "networkFromMaster.pasture.internal.")
 	if len(a.Answer) != 1 {
 		t.Fatalf("Incorrect number of A records, should be 1: [%v]", len(a.Answer))
 	}
@@ -291,7 +291,7 @@ func TestNetworkFrom(t *testing.T) {
 		t.Fatalf("Incorrect ip for master, should be: [%v]", ip)
 	}
 
-	a = getRecordAFromDefault(answers, "networkFromChild.rancher.internal.")
+	a = getRecordAFromDefault(answers, "networkFromChild.pasture.internal.")
 	if len(a.Answer) != 1 {
 		t.Fatalf("Incorrect number of A records, should be 1: [%v]", len(a.Answer))
 	}
@@ -316,7 +316,7 @@ func TestClientWithLinksAlias(t *testing.T) {
 			t.Fatalf("Incorrect number of A records, should be 2: [%v]", len(c.A))
 		}
 
-		fqdns := []string{"myalias.foo.rancher.internal.", "myalias.rancher.internal."}
+		fqdns := []string{"myalias.foo.pasture.internal.", "myalias.pasture.internal."}
 		for _, fqdn := range fqdns {
 			val, ok := c.A[fqdn]
 			if !ok {
@@ -346,7 +346,7 @@ func TestContainerLink(t *testing.T) {
 	if len(c.A) != 1 {
 		t.Fatalf("Incorrect number of A records, should be 1: [%v]", len(c.A))
 	}
-	fqdn := "containerLink.rancher.internal."
+	fqdn := "containerLink.pasture.internal."
 	for key, val := range c.A {
 		ok := strings.EqualFold(fqdn, key)
 		if !ok {
@@ -374,7 +374,7 @@ func TestClientWithAliasCnameLinks(t *testing.T) {
 			t.Fatalf("Can't find client answers for: [%v]", ip)
 		}
 
-		fqdns := []string{"myaliascname.foo.rancher.internal.", "myaliascname.rancher.internal."}
+		fqdns := []string{"myaliascname.foo.pasture.internal.", "myaliascname.pasture.internal."}
 		for _, fqdn := range fqdns {
 			val, ok := c.Cname[fqdn]
 			if !ok {
@@ -394,7 +394,7 @@ func TestSidekicks(t *testing.T) {
 		t.Fatalf("Error generating answers %v", err)
 	}
 
-	a := getRecordAFromDefault(answers, "primary.foo.rancher.internal.")
+	a := getRecordAFromDefault(answers, "primary.foo.pasture.internal.")
 	if len(a.Answer) != 1 {
 		t.Fatalf("Incorrect number of answers for primary service [%v]", a.Answer)
 	}
@@ -402,7 +402,7 @@ func TestSidekicks(t *testing.T) {
 		t.Fatalf("Incorrect answer for primary service ip [%v]", a.Answer[0])
 	}
 
-	a = getRecordAFromDefault(answers, "sidekick.primary.foo.rancher.internal.")
+	a = getRecordAFromDefault(answers, "sidekick.primary.foo.pasture.internal.")
 	if len(a.Answer) != 1 {
 		t.Fatalf("Incorrect number of answers for sidekick service [%v]", a.Answer)
 	}
@@ -417,7 +417,7 @@ func TestNSidekicks(t *testing.T) {
 		t.Fatalf("Error generating answers %v", err)
 	}
 
-	a := getRecordAFromDefault(answers, "primaryn.foo.rancher.internal.")
+	a := getRecordAFromDefault(answers, "primaryn.foo.pasture.internal.")
 	if len(a.Answer) != 1 {
 		t.Fatalf("Incorrect number of answers for primary service [%v]", a.Answer)
 	}
@@ -425,7 +425,7 @@ func TestNSidekicks(t *testing.T) {
 		t.Fatalf("Incorrect answer for primary service ip [%v]", a.Answer[0])
 	}
 
-	a = getRecordAFromDefault(answers, "primaryn.rancher.internal.")
+	a = getRecordAFromDefault(answers, "primaryn.pasture.internal.")
 	if len(a.Answer) != 1 {
 		t.Fatalf("Incorrect number of answers for primary service container [%v]", a.Answer)
 	}
@@ -433,7 +433,7 @@ func TestNSidekicks(t *testing.T) {
 		t.Fatalf("Incorrect answer for primary service ip [%v]", a.Answer[0])
 	}
 
-	a = getRecordAFromDefault(answers, "sidekickn.primaryn.foo.rancher.internal.")
+	a = getRecordAFromDefault(answers, "sidekickn.primaryn.foo.pasture.internal.")
 	if len(a.Answer) != 1 {
 		t.Fatalf("Incorrect number of answers for sidekick service [%v]", a.Answer)
 	}
@@ -441,7 +441,7 @@ func TestNSidekicks(t *testing.T) {
 		t.Fatalf("Incorrect answer for sidekick service [%v]", a.Answer[0])
 	}
 
-	a = getRecordAFromDefault(answers, "sidekickn.rancher.internal.")
+	a = getRecordAFromDefault(answers, "sidekickn.pasture.internal.")
 	if len(a.Answer) != 1 {
 		t.Fatalf("Incorrect number of answers for sidekick service container [%v]", a.Answer)
 	}
@@ -557,7 +557,7 @@ func (mf tMetaFetcher) GetServices() ([]metadata.Service, error) {
 		ServiceName: "clientip1Svc",
 		PrimaryIp:   "172.17.0.2",
 		State:       "running",
-		DnsSearch:   []string{"regularSvc.rancher.internal", "foo.rancher.internal", "rancher.internal"},
+		DnsSearch:   []string{"regularSvc.pasture.internal", "foo.pasture.internal", "pasture.internal"},
 	}
 	containers = []metadata.Container{c}
 	clientip1Svc := metadata.Service{
@@ -886,11 +886,11 @@ func (mf tMetaFetcher) GetServices() ([]metadata.Service, error) {
 	}
 
 	c = metadata.Container{
-		Name:        "sidekickn",
-		UUID:        "sidekickn",
-		StackName:   "foo",
-		ServiceName: "sidekickn",
-		State:       "running",
+		Name:                     "sidekickn",
+		UUID:                     "sidekickn",
+		StackName:                "foo",
+		ServiceName:              "sidekickn",
+		State:                    "running",
 		NetworkFromContainerUUID: "primaryn",
 	}
 	containers = []metadata.Container{c}
@@ -915,7 +915,7 @@ func (mf tMetaFetcher) GetContainers() ([]metadata.Container, error) {
 		ServiceName: "clientip1Svc",
 		PrimaryIp:   "172.17.0.2",
 		State:       "running",
-		DnsSearch:   []string{"regularSvc.rancher.internal", "foo.rancher.internal", "rancher.internal"},
+		DnsSearch:   []string{"regularSvc.pasture.internal", "foo.pasture.internal", "pasture.internal"},
 	}
 
 	c2 := metadata.Container{
@@ -925,7 +925,7 @@ func (mf tMetaFetcher) GetContainers() ([]metadata.Container, error) {
 		ServiceName: "svcWithLinks",
 		PrimaryIp:   "172.17.0.3",
 		State:       "running",
-		DnsSearch:   []string{"svcWithLinks.rancher.internal", "foo.rancher.internal", "rancher.internal"},
+		DnsSearch:   []string{"svcWithLinks.pasture.internal", "foo.pasture.internal", "pasture.internal"},
 	}
 
 	c3 := metadata.Container{
@@ -935,7 +935,7 @@ func (mf tMetaFetcher) GetContainers() ([]metadata.Container, error) {
 		ServiceName: "svcWithLinks",
 		PrimaryIp:   "172.17.0.4",
 		State:       "running",
-		DnsSearch:   []string{"svcWithLinks.rancher.internal", "foo.rancher.internal", "rancher.internal"},
+		DnsSearch:   []string{"svcWithLinks.pasture.internal", "foo.pasture.internal", "pasture.internal"},
 	}
 	c4 := metadata.Container{
 		Name:        "client_container",
@@ -944,7 +944,7 @@ func (mf tMetaFetcher) GetContainers() ([]metadata.Container, error) {
 		ServiceName: "svcWithLinksAlias",
 		PrimaryIp:   "172.17.0.6",
 		State:       "running",
-		DnsSearch:   []string{"svcWithLinksAlias.rancher.internal", "foo.rancher.internal", "rancher.internal"},
+		DnsSearch:   []string{"svcWithLinksAlias.pasture.internal", "foo.pasture.internal", "pasture.internal"},
 	}
 	c5 := metadata.Container{
 		Name:        "client_container",
@@ -953,14 +953,14 @@ func (mf tMetaFetcher) GetContainers() ([]metadata.Container, error) {
 		ServiceName: "svcWithLinksAlias",
 		PrimaryIp:   "172.17.0.7",
 		State:       "running",
-		DnsSearch:   []string{"svcWithLinksAlias.rancher.internal", "foo.rancher.internal", "rancher.internal"},
+		DnsSearch:   []string{"svcWithLinksAlias.pasture.internal", "foo.pasture.internal", "pasture.internal"},
 	}
 	c6 := metadata.Container{
 		Name:      "clientStandalone",
 		UUID:      "clientStandalone",
 		PrimaryIp: "172.17.0.10",
 		State:     "running",
-		DnsSearch: []string{"regularSvc.rancher.internal", "foo.rancher.internal", "rancher.internal"},
+		DnsSearch: []string{"regularSvc.pasture.internal", "foo.pasture.internal", "pasture.internal"},
 	}
 	c7 := metadata.Container{
 		Name:        "clientKubernetes",
@@ -1004,18 +1004,18 @@ func (mf tMetaFetcher) GetContainers() ([]metadata.Container, error) {
 		State:     "running",
 	}
 	c12 := metadata.Container{
-		Name:  "networkFromChild",
-		UUID:  "networkFromChild",
-		State: "running",
+		Name:                     "networkFromChild",
+		UUID:                     "networkFromChild",
+		State:                    "running",
 		NetworkFromContainerUUID: "networkFromMaster",
 	}
 
 	c13 := metadata.Container{
-		Name:        "sidekickn",
-		UUID:        "sidekickn",
-		StackName:   "foo",
-		ServiceName: "sidekickn",
-		State:       "running",
+		Name:                     "sidekickn",
+		UUID:                     "sidekickn",
+		StackName:                "foo",
+		ServiceName:              "sidekickn",
+		State:                    "running",
 		NetworkFromContainerUUID: "primaryn",
 	}
 
@@ -1035,7 +1035,7 @@ func (mf tMetaFetcher) GetContainers() ([]metadata.Container, error) {
 		ServiceName: "svcWithLinksAliasCname",
 		PrimaryIp:   "172.17.0.66",
 		State:       "running",
-		DnsSearch:   []string{"svcWithLinksAliasCname.rancher.internal", "foo.rancher.internal", "rancher.internal"},
+		DnsSearch:   []string{"svcWithLinksAliasCname.pasture.internal", "foo.pasture.internal", "pasture.internal"},
 	}
 	c16 := metadata.Container{
 		Name:        "client_container2",
@@ -1044,7 +1044,7 @@ func (mf tMetaFetcher) GetContainers() ([]metadata.Container, error) {
 		ServiceName: "svcWithLinksAliasCname",
 		PrimaryIp:   "172.17.0.77",
 		State:       "running",
-		DnsSearch:   []string{"svcWithLinksAliasCname.rancher.internal", "foo.rancher.internal", "rancher.internal"},
+		DnsSearch:   []string{"svcWithLinksAliasCname.pasture.internal", "foo.pasture.internal", "pasture.internal"},
 	}
 	links := make(map[string]string)
 	links["containerLink"] = "regular_container"

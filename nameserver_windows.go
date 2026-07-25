@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"os/exec"
 
-	"github.com/rancher/log"
+	log "github.com/PastureStack/internal-dns/internal/logging"
 )
 
 func getGlobalRecurse() ([]string, error) {
@@ -24,7 +24,7 @@ func getGlobalRecurse() ([]string, error) {
 		recurse = append(recurse, ns)
 	}
 
-	log.Info("recurse: %v", recurse)
+	log.Infof("recurse: %v", recurse)
 	if len(recurse) == 0 {
 		return fallbackRecurse, nil
 	}

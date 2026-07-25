@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+verify() {
+  local expected="$1" path="$2" actual
+  actual="$(sha256sum "$path" | awk '{print toupper($1)}')"
+  if [[ "$actual" != "$expected" ]]; then
+    printf '%s hash mismatch: got %s, want %s\n' "$path" "$actual" "$expected" >&2
+    exit 1
+  fi
+  printf '%s: OK\n' "$path"
+}
+
+verify EB3D7B5485466ACBD81F2B496F595AB637D2792E268206B27D99E793BDB67549 LICENSE
+verify 653C87917485A6F6B161EB97F089A902A089194E24454E64EBB55A0342542723 cache/LICENSE
+verify F200FF9BAD73385DB2ED81E23EE2C1FE069EB5776E17FAE4EE85AD0A9E1361A5 LICENSES/miekg-dns.txt
+verify 74A7B790488334D8A15BB0349EF1CEED3D4BB107F1C175460D5049217F0B5B89 LICENSES/miekg-dns-AUTHORS.txt
+verify 324926617F47A0CABD01EB385AE3BB7F7007B1FF0D3314461521F78C91DCAC4A LICENSES/yaml-v3.txt

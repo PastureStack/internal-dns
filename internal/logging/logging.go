@@ -1,6 +1,7 @@
 package logging
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"strings"
@@ -19,20 +20,25 @@ func SetOutput(output io.Writer) {
 
 func Debug(args ...any) {
 	if debug.Load() {
-		log.Print(args...)
+		log.Print(safeLogMessage(fmt.Sprint(args...)))
 	}
 }
 
 func Debugf(format string, args ...any) {
 	if debug.Load() {
-		log.Printf(format, args...)
+		log.Print(safeLogMessage(fmt.Sprintf(format, args...)))
 	}
 }
 
-func Info(args ...any)                  { log.Print(args...) }
-func Infof(format string, args ...any)  { log.Printf(format, args...) }
-func Warn(args ...any)                  { log.Print(args...) }
-func Warnf(format string, args ...any)  { log.Printf(format, args...) }
-func Errorf(format string, args ...any) { log.Printf(format, args...) }
-func Fatal(args ...any)                 { log.Fatal(args...) }
-func Fatalf(format string, args ...any) { log.Fatalf(format, args...) }
+func Info(args ...any)                  { log.Print(safeLogMessage(fmt.Sprint(args...))) }
+func Infof(format string, args ...any)  { log.Print(safeLogMessage(fmt.Sprintf(format, args...))) }
+func Warn(args ...any)                  { log.Print(safeLogMessage(fmt.Sprint(args...))) }
+func Warnf(format string, args ...any)  { log.Print(safeLogMessage(fmt.Sprintf(format, args...))) }
+func Errorf(format string, args ...any) { log.Print(safeLogMessage(fmt.Sprintf(format, args...))) }
+func Fatal(args ...any)                 { log.Fatal(safeLogMessage(fmt.Sprint(args...))) }
+func Fatalf(format string, args ...any) { log.Fatal(safeLogMessage(fmt.Sprintf(format, args...))) }
+
+func safeLogMessage(message string) string {
+	message = strings.ReplaceAll(message, "\r", "")
+	return strings.ReplaceAll(message, "\n", " ")
+}

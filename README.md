@@ -25,8 +25,12 @@ make build
 ```
 
 `scripts/build` also cross-compiles `windows/amd64`. The Windows Server 2022
-Catalog uses `ghcr.io/pasturestack/internal-dns-windows:v0.17.12-windows-ltsc2022`;
-the Linux image remains independently versioned.
+Catalog uses the pure numeric coordinate
+`ghcr.io/pasturestack/internal-dns-windows:v0.17.12`. It is an exact manifest
+alias of the already reviewed Windows build
+(`sha256:91d5147cc9ec20a8b9f8cc91745d620cc916b730645b8064a7c49f5f6a0d5c90`),
+so the naming correction does not change image bytes. The Linux image remains
+independently versioned.
 
 Linux integration tests require `bats`, `dig`, free local TCP/UDP port 15353, and controlled recursive DNS access:
 

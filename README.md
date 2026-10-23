@@ -26,12 +26,13 @@ make validate
 make build
 ```
 
-`scripts/build` also cross-compiles `windows/amd64`. This repository currently
-has no GitHub Release. The Catalog pins the Linux image at
-`ghcr.io/pasturestack/internal-dns:v0.17.11` and the Windows Server 2022 image at
-`ghcr.io/pasturestack/internal-dns-windows:v0.17.12`; these are independently
-versioned container coordinates, not GitHub Release tags. The Windows
-coordinate is an exact manifest alias of the already reviewed build
+`scripts/build` also cross-compiles `windows/amd64`. The current published Linux
+release is [v0.17.13](https://github.com/PastureStack/internal-dns/releases/tag/v0.17.13),
+and the Catalog uses `ghcr.io/pasturestack/internal-dns:v0.17.13`.
+The Windows Server 2022 image remains
+`ghcr.io/pasturestack/internal-dns-windows:v0.17.12`; it was not rebuilt or
+revalidated by this Linux release. That Windows coordinate is an exact manifest
+alias of the already reviewed build
 (`sha256:91d5147cc9ec20a8b9f8cc91745d620cc916b730645b8064a7c49f5f6a0d5c90`),
 so the naming correction did not change image bytes.
 

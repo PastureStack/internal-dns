@@ -1,5 +1,7 @@
 # Internal DNS
 
+Current source builds use Go 1.27.3 while the Go language minimum remains 1.26.0. The selected `golang.org/x/net` version is v0.60.0; its required `golang.org/x/sys` version is v0.48.0. Ubuntu 26.04 images install the checksum-pinned `ca-certificates` 20260816ubuntu0.26.04.1 package without advancing the remaining package snapshot. These source inputs take effect in newly built artifacts; existing published release coordinates below describe their original artifacts.
+
 Internal DNS serves metadata-derived service discovery records, client-specific search paths, recursive forwarding, and DNS response caching for PastureStack environments.
 
 PastureStack is an independent community effort to preserve, audit, and modernize the Rancher 1.6 ecosystem. It is not affiliated with or endorsed by Rancher Labs or SUSE.

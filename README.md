@@ -1,8 +1,8 @@
 # Internal DNS
 
-Linux candidate **`v0.17.14`** integrates shared Ubuntu 26.04 security backports for already-installed packages while preserving the selected coreutils provider. It is unpublished; the last published Linux release is [v0.17.13](https://github.com/PastureStack/internal-dns/releases/tag/v0.17.13).
+Linux runtime **`v0.17.14`** integrates shared Ubuntu 26.04 security backports for already-installed packages while preserving the selected coreutils provider.
 
-Build and image examples below target the candidate. Publication requires completed bundle provenance and the normal final-image release gates. The image retains bundle manifests, source inputs and install/verify receipts under `/usr/share/pasturestack/security/ubuntu-backports/`.
+The image retains bundle manifests, source inputs and installation receipts under `/usr/share/pasturestack/security/ubuntu-backports/`.
 
 Internal DNS serves metadata-derived service discovery records, client-specific search paths, recursive forwarding, and DNS response caching for PastureStack environments.
 
@@ -28,7 +28,7 @@ make validate
 make build
 ```
 
-`scripts/build` also cross-compiles `windows/amd64`. After publication, the Linux candidate image is
+`scripts/build` also cross-compiles `windows/amd64`. The Linux image is
 `ghcr.io/pasturestack/internal-dns:v0.17.14`; Catalog selection follows its release and integration gates.
 The separately versioned Windows Server 2022 image remains
 `ghcr.io/pasturestack/internal-dns-windows:v0.17.12`. This Linux preparation

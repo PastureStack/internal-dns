@@ -1,6 +1,8 @@
 # Internal DNS
 
-Current source builds use Go 1.27.3 while the Go language minimum remains 1.26.0. The selected `golang.org/x/net` version is v0.60.0; its required `golang.org/x/sys` version is v0.48.0. Ubuntu 26.04 images install the checksum-pinned `ca-certificates` 20260816ubuntu0.26.04.1 package with only officially fixed, already-installed packages advanced by the reviewed security overlay. These source inputs take effect in newly built artifacts; existing published release coordinates below describe their original artifacts.
+Linux runtime **`v0.17.14`** integrates shared Ubuntu 26.04 security backports for already-installed packages while preserving the selected coreutils provider.
+
+The image retains bundle manifests, source inputs and installation receipts under `/usr/share/pasturestack/security/ubuntu-backports/`.
 
 Internal DNS serves metadata-derived service discovery records, client-specific search paths, recursive forwarding, and DNS response caching for PastureStack environments.
 
@@ -26,15 +28,11 @@ make validate
 make build
 ```
 
-`scripts/build` also cross-compiles `windows/amd64`. The current published Linux
-release is [v0.17.13](https://github.com/PastureStack/internal-dns/releases/tag/v0.17.13),
-and the Catalog uses `ghcr.io/pasturestack/internal-dns:v0.17.13`.
-The Windows Server 2022 image remains
-`ghcr.io/pasturestack/internal-dns-windows:v0.17.12`; it was not rebuilt or
-revalidated by this Linux release. That Windows coordinate is an exact manifest
-alias of the already reviewed build
-(`sha256:91d5147cc9ec20a8b9f8cc91745d620cc916b730645b8064a7c49f5f6a0d5c90`),
-so the naming correction did not change image bytes.
+`scripts/build` also cross-compiles `windows/amd64`. The Linux image is
+`ghcr.io/pasturestack/internal-dns:v0.17.14`; Catalog selection follows its release and integration gates.
+The separately versioned Windows Server 2022 image remains
+`ghcr.io/pasturestack/internal-dns-windows:v0.17.12`. This Linux preparation
+does not rebuild or revalidate that Windows image.
 
 Linux integration tests require `bats`, `dig`, free local TCP/UDP port 15353, and controlled recursive DNS access:
 

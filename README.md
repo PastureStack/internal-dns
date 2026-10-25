@@ -1,6 +1,8 @@
 # Internal DNS
 
-Linux runtime **`v0.17.14`** integrates shared Ubuntu 26.04 security backports for already-installed packages while preserving the selected coreutils provider.
+Linux runtime **`v0.17.15`** integrates shared Ubuntu 26.04 security backports for already-installed packages while preserving the selected coreutils provider.
+
+The shared bundle includes the official Brotli decoder fix for CVE-2026-111497.
 
 The image retains bundle manifests, source inputs and installation receipts under `/usr/share/pasturestack/security/ubuntu-backports/`.
 
@@ -29,10 +31,10 @@ make build
 ```
 
 `scripts/build` also cross-compiles `windows/amd64`. The Linux image is
-`ghcr.io/pasturestack/internal-dns:v0.17.14`; Catalog selection follows its release and integration gates.
+`ghcr.io/pasturestack/internal-dns:v0.17.15`; Catalog selection follows its release and integration gates.
 The separately versioned Windows Server 2022 image remains
-`ghcr.io/pasturestack/internal-dns-windows:v0.17.12`. This Linux preparation
-does not rebuild or revalidate that Windows image.
+`ghcr.io/pasturestack/internal-dns-windows:v0.17.12`. The Windows image remains separately
+versioned and is not rebuilt by this Linux release.
 
 Linux integration tests require `bats`, `dig`, free local TCP/UDP port 15353, and controlled recursive DNS access:
 

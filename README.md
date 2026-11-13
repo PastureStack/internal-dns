@@ -1,6 +1,6 @@
 # Internal DNS
 
-Linux runtime **`v0.17.15`** integrates shared Ubuntu 26.04 security backports for already-installed packages while preserving the selected coreutils provider.
+Linux runtime **`v0.17.16`** uses Go 1.27.4, Ubuntu 26.04 APT 3.2.1ubuntu0.1 and glibc 2.43-2ubuntu2.7. See the [release and SBOM](https://github.com/PastureStack/internal-dns/releases/tag/v0.17.16).
 
 The shared bundle includes the official Brotli decoder fix for CVE-2026-111497.
 
@@ -31,7 +31,7 @@ make build
 ```
 
 `scripts/build` also cross-compiles `windows/amd64`. The Linux image is
-`ghcr.io/pasturestack/internal-dns:v0.17.15`; Catalog selection follows its release and integration gates.
+`ghcr.io/pasturestack/internal-dns:v0.17.16`; Catalog selection follows its release and integration gates.
 The separately versioned Windows Server 2022 image remains
 `ghcr.io/pasturestack/internal-dns-windows:v0.17.12`. The Windows image remains separately
 versioned and is not rebuilt by this Linux release.

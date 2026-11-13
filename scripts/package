@@ -6,6 +6,16 @@ tag="${TAG:-dev}"
 repository="${REPO:-ghcr.io/pasturestack}"
 image="${repository}/internal-dns:${tag}"
 
+if [ "${CHECK_QUALIFIED_BACKPORTS:-0}" = 1 ]; then
+  docker build --target qualified_backports \
+    --provenance=false \
+    --network "${DOCKER_BUILD_NETWORK:-default}" \
+    --build-arg UBUNTU_MIRROR="${UBUNTU_MIRROR:-http://archive.ubuntu.com/ubuntu}" \
+    --build-arg IMAGE_VERSION="$tag" \
+    -t "$image-backports" \
+    -f package/linux/amd64/Dockerfile .
+fi
+
 docker build \
   --provenance=false \
   --network "${DOCKER_BUILD_NETWORK:-default}" \
